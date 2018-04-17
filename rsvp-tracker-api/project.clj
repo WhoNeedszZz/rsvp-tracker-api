@@ -5,14 +5,14 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [cheshire "5.8.0"]
                  [compojure "1.6.1"]
-                 [proto-repl "0.3.1"]
                  [ring/ring-core "1.6.3"]
                  [ring/ring-defaults "0.3.1"]
-                 [ring/ring-mock "0.3.2"]
                  [ring-cors "0.1.12"]]
   :plugins [[lein-ring "0.12.4"]]
   :ring {:handler rsvp-tracker-api.core/handler
          :port 8080}
   :main ^:skip-aot rsvp-tracker-api.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[proto-repl "0.3.1"]
+                                  [ring/ring-mock "0.3.2"]]}})
