@@ -5,6 +5,8 @@
     [ring.mock.request :refer [json-body request]]
     [rsvp-tracker-api.core :refer [handler]]))
 
+(def events-endpoint "/api/v1/events")
+
 (def initial-event {"title" "Test Event 1"
                     "location" "Lafayette, LA"
                     "dateStart" "2017-11-21T00:00:00.000Z"
@@ -27,7 +29,7 @@
 
 (deftest create-event-valid-data
   (testing "Create an event at /api/v1/events"
-    (is (not= (handler (-> (request :post "/api/v1/events")
+    (is (not= (handler (-> (request :post events-endpoint)
                            (json-body initial-event)))
               {:status 400
                :headers {"Content-Type" "application/json"}
@@ -35,7 +37,7 @@
 
 (deftest create-event-invalid-data
   (testing "Fail to create an event from invalid JSON"
-    (is (= (handler (-> (request :post "/api/v1/events")
+    (is (= (handler (-> (request :post events-endpoint)
                         (json-body "foo")))
            {:status 400
             :headers {"Content-Type" "application/json"}
