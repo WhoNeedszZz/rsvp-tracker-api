@@ -23,7 +23,7 @@
     (is (= (handler (request :get "/"))
            {:status 200
             :headers {"Content-Type" "application/json"}
-            :body "{\"foo\":\"bar\"}"}))))
+            :body (generate-string {:foo :bar})}))))
 
 (deftest create-event-valid-data
   (testing "Create an event at /api/v1/events"
