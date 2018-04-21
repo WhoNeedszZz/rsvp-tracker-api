@@ -2,7 +2,7 @@
   (:gen-class)
   (:require
     [cheshire.core :refer [generate-string]]
-    [monger.collection :refer [find-map-by-id find-maps insert update-by-id]]
+    [monger.collection :refer [find-map-by-id find-maps insert remove-by-id update-by-id]]
     [monger.core :refer [connect get-db]]
     [monger.joda-time]
     [monger.json]
@@ -58,3 +58,14 @@
     (if (.wasAcknowledged update)
       (get-event id)
       error-update)))
+
+(defn delete-event
+  "Deletes a specific event given by id"
+  [id]
+  (let [conn (connect)
+        db (get-db conn db-name)
+        oid (ObjectId. id)
+        delete (remove-by-id db collection oid)]
+    (if (.wasAcknowledged delete)
+      (generate-string {:completed true})
+      (generate-string {:completed false}))))
