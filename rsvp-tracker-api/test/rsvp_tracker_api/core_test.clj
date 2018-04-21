@@ -29,6 +29,8 @@
              "accepted" []
              "declined" []})
 
+(def invalid-id 111111111111111111111111)
+
 (def create-error (generate-string {:error "Failed to create event"}))
 
 (def view-empty (generate-string []))
@@ -88,6 +90,6 @@
 
 (deftest view-one-event-invalid
   (testing "View and event by id (doesn't exist)"
-    (is (let [response (handler (request :get (str events-endpoint (format "/%s" 111111111111111111111111))))]
+    (is (let [response (handler (request :get (str events-endpoint (format "/%s" invalid-id))))]
           (= (:body response)
              "null")))))
