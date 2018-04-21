@@ -1,7 +1,7 @@
 (ns rsvp-tracker-api.core-test
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cheshire.core :refer [generate-string]]
+    [cheshire.core :refer [generate-string parse-string]]
     [ring.mock.request :refer [json-body request]]
     [rsvp-tracker-api.core :refer [handler]]))
 
@@ -33,6 +33,13 @@
 
 (def view-empty (generate-string []))
 
+(def err-id-not-found (generate-string {:error "Event with given ID does not exist"}))\
+
+(defn get-first-event
+  "Get first event created this test session (id is random)"
+  []
+  (let [response (handler (request :get events-endpoint))]
+    (first (parse-string (:body response)))))
 
 (deftest api-base
   (testing "Initial bogus JSON data response from /"
@@ -70,3 +77,17 @@
                   200)
                (not= (:body response)
                      view-empty))))))
+
+(deftest view-one-event-exists
+  (testing "View an event by id (exists)"
+    (is (let [event (get-first-event)
+              id (get-in event ["_id"])
+              response (handler (request :get (str events-endpoint (format "/%s" id))))]
+          (= (:status response)
+             200)))))
+
+(deftest view-one-event-invalid
+  (testing "View and event by id (doesn't exist)"
+    (is (let [response (handler (request :get (str events-endpoint (format "/%s" 111111111111111111111111))))]
+          (= (:body response)
+             "null")))))
