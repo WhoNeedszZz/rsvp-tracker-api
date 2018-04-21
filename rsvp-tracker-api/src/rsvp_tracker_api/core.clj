@@ -2,11 +2,11 @@
   (:gen-class)
   (:require
     [cheshire.core :refer [generate-string]]
-    [compojure.core :refer [defroutes GET POST PUT]]
+    [compojure.core :refer [defroutes DELETE GET POST PUT]]
     [ring.middleware.cors :refer [wrap-cors]]
     [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
     [ring.util.response :refer [content-type response status]]
-    [rsvp-tracker-api.event :refer [create-event get-event get-events update-event]]))
+    [rsvp-tracker-api.event :refer [create-event delete-event get-event get-events update-event]]))
 
 (def base-path "/api/v1")
 
@@ -15,6 +15,13 @@
   [response]
   (if (not= (:body response) (generate-string {:error "Failed to create event"}))
     (status response 201)
+    (status response 400)))
+
+(defn event-deleted?
+  "Adds a Ring HTTP status depending on the success of deleting an event"
+  [response]
+  (if (= (:body response) (generate-string {:completed true}))
+    (status response 204)
     (status response 400)))
 
 (defroutes app
@@ -33,7 +40,11 @@
         (content-type "application/json")))
   (PUT (str base-path "/events/:id") [id :as request]
     (-> (response (update-event id request))
-        (content-type "application/json"))))
+        (content-type "application/json")))
+  (DELETE (str base-path "/events/:id") [id]
+    (-> (response (delete-event id))
+        (content-type "application/json")
+        (event-deleted?))))
 
 (def handler
   (-> app
