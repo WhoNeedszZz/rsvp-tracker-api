@@ -31,9 +31,8 @@
 
 (def create-error (generate-string {:error "Failed to create event"}))
 
-(def events-empty (generate-string {:message "There are currently no events"}))
+(def view-empty (generate-string []))
 
-(def view-error (generate-string {:error "Failed to retrieve events"}))
 
 (deftest api-base
   (testing "Initial bogus JSON data response from /"
@@ -47,15 +46,14 @@
     (is (= (handler (request :get events-endpoint))
            {:status 200
             :headers {"Content-Type" "application/json"}
-            :body (generate-string [])}))))
+            :body view-empty}))))
 
 (deftest create-event-valid-data
   (testing "Create an event at /api/v1/events"
-    (is (not= (handler (-> (request :post events-endpoint)
-                           (json-body initial-event)))
-              {:status 400
-               :headers {"Content-Type" "application/json"}
-               :body create-error}))))
+    (is (let [response (handler (-> (request :post events-endpoint)
+                                    (json-body initial-event)))]
+          (= (:status response)
+             201)))))
 
 (deftest create-event-invalid-data
   (testing "Fail to create an event from invalid JSON"
@@ -67,7 +65,8 @@
 
 (deftest view-all-events
   (testing "View all events when there is an event"
-    (is (not= (handler (request :get events-endpoint))
-           {:status 200
-            :headers {"Content-Type" "application/json"}
-            :body view-error}))))
+    (is (let [response (handler (request :get events-endpoint))]
+          (and (= (:status response)
+                  200)
+               (not= (:body response)
+                     view-empty))))))
