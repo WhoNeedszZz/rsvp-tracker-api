@@ -36,4 +36,4 @@
   []
   (let [conn (connect)
         db (get-db conn db-name)]
-    (find-maps db collection)))
+    (generate-string (find-maps db collection))))

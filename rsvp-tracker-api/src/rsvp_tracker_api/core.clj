@@ -6,7 +6,7 @@
     [ring.middleware.cors :refer [wrap-cors]]
     [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
     [ring.util.response :refer [content-type response status]]
-    [rsvp-tracker-api.event :refer [create-event]]))
+    [rsvp-tracker-api.event :refer [create-event get-events]]))
 
 (def base-path "/api/v1")
 
@@ -24,7 +24,10 @@
   (POST (str base-path "/events") request
     (-> (response (create-event request))
         (content-type "application/json")
-        (event-created?))))
+        (event-created?)))
+  (GET (str base-path "/events") request
+    (-> (response (get-events))
+        (content-type "application/json"))))
 
 (def handler
   (-> app
