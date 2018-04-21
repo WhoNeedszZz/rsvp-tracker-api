@@ -1,7 +1,7 @@
 (ns rsvp-tracker-api.core-test
   (:require
     [clojure.test :refer [deftest is testing]]
-    [cheshire.core :refer [generate-string]]
+    [cheshire.core :refer [generate-string parse-string]]
     [ring.mock.request :refer [json-body request]]
     [rsvp-tracker-api.core :refer [handler]]))
 
@@ -31,9 +31,15 @@
 
 (def create-error (generate-string {:error "Failed to create event"}))
 
-(def events-empty (generate-string {:message "There are currently no events"}))
+(def view-empty (generate-string []))
 
-(def view-error (generate-string {:error "Failed to retrieve events"}))
+(def err-id-not-found (generate-string {:error "Event with given ID does not exist"}))\
+
+(defn get-first-event
+  "Get first event created this test session (id is random)"
+  []
+  (let [response (handler (request :get events-endpoint))]
+    (first (parse-string (:body response)))))
 
 (deftest api-base
   (testing "Initial bogus JSON data response from /"
@@ -47,15 +53,14 @@
     (is (= (handler (request :get events-endpoint))
            {:status 200
             :headers {"Content-Type" "application/json"}
-            :body (generate-string [])}))))
+            :body view-empty}))))
 
 (deftest create-event-valid-data
   (testing "Create an event at /api/v1/events"
-    (is (not= (handler (-> (request :post events-endpoint)
-                           (json-body initial-event)))
-              {:status 400
-               :headers {"Content-Type" "application/json"}
-               :body create-error}))))
+    (is (let [response (handler (-> (request :post events-endpoint)
+                                    (json-body initial-event)))]
+          (= (:status response)
+             201)))))
 
 (deftest create-event-invalid-data
   (testing "Fail to create an event from invalid JSON"
@@ -67,7 +72,22 @@
 
 (deftest view-all-events
   (testing "View all events when there is an event"
-    (is (not= (handler (request :get events-endpoint))
-           {:status 200
-            :headers {"Content-Type" "application/json"}
-            :body view-error}))))
+    (is (let [response (handler (request :get events-endpoint))]
+          (and (= (:status response)
+                  200)
+               (not= (:body response)
+                     view-empty))))))
+
+(deftest view-one-event-exists
+  (testing "View an event by id (exists)"
+    (is (let [event (get-first-event)
+              id (get-in event ["_id"])
+              response (handler (request :get (str events-endpoint (format "/%s" id))))]
+          (= (:status response)
+             200)))))
+
+(deftest view-one-event-invalid
+  (testing "View and event by id (doesn't exist)"
+    (is (let [response (handler (request :get (str events-endpoint (format "/%s" 111111111111111111111111))))]
+          (= (:body response)
+             "null")))))

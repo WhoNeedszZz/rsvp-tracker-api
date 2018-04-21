@@ -2,7 +2,7 @@
   (:gen-class)
   (:require
     [cheshire.core :refer [generate-string]]
-    [monger.collection :refer [find-maps insert]]
+    [monger.collection :refer [find-map-by-id find-maps insert]]
     [monger.core :refer [connect get-db]]
     [monger.joda-time]
     [monger.json]
@@ -37,3 +37,10 @@
   (let [conn (connect)
         db (get-db conn db-name)]
     (generate-string (find-maps db collection))))
+
+(defn get-event
+  "Retrieves a specific event given by id"
+  [id]
+  (let [conn (connect)
+        db (get-db conn db-name)]
+    (generate-string (find-map-by-id db collection (ObjectId. id)))))
