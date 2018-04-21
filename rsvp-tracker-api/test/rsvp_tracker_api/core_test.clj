@@ -29,11 +29,31 @@
              "accepted" []
              "declined" []})
 
+(def updated-event {"title" "Test Event Uno"
+                    "location" "Lafayette, LA"
+                    "dateStart" "2017-11-21T00:00:00.000Z"
+                    "dateEnd" "2017-11-21T04:00:00.000Z"
+                    "description" "Live it up"
+                    "organizers" ["fex@bar.com"]
+                    "invited" ["bob@foo.com" "sarah@foo.com"]
+                    "tentative" []
+                    "accepted" []
+                    "declined" []})
+
+(def invalid-id 111111111111111111111111)
+
 (def create-error (generate-string {:error "Failed to create event"}))
 
 (def view-empty (generate-string []))
 
 (def err-id-not-found (generate-string {:error "Event with given ID does not exist"}))\
+
+(def invalid-endpoint (str events-endpoint (format "/%s" invalid-id)))
+
+(defn get-valid-endpoint
+  "Returns the events endpoint with the supplied id"
+  [id]
+  (str events-endpoint (format "/%s" id)))
 
 (defn get-first-event
   "Get first event created this test session (id is random)"
@@ -82,12 +102,32 @@
   (testing "View an event by id (exists)"
     (is (let [event (get-first-event)
               id (get-in event ["_id"])
-              response (handler (request :get (str events-endpoint (format "/%s" id))))]
+              response (handler (request :get (get-valid-endpoint id)))]
           (= (:status response)
              200)))))
 
 (deftest view-one-event-invalid
   (testing "View and event by id (doesn't exist)"
-    (is (let [response (handler (request :get (str events-endpoint (format "/%s" 111111111111111111111111))))]
+    (is (let [response (handler (request :get invalid-endpoint))]
           (= (:body response)
              "null")))))
+
+(deftest update-event
+  (testing "Update first event"
+    (is (let [event (get-first-event)
+              id (get-in event ["_id"])
+              response (handler (-> (request :put (get-valid-endpoint id))
+                                    (json-body updated-event)))]
+          (and (= (:status response)
+                  200)
+               (not= (:body response)
+                     "null"))))))
+
+(deftest update-event-invalid
+  (testing "Update first event"
+    (is (let [response (handler (-> (request :put invalid-endpoint)
+                                    (json-body updated-event)))]
+          (and (= (:status response)
+                  200)
+               (= (:body response)
+                  "null"))))))
