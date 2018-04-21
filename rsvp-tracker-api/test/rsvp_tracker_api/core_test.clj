@@ -29,6 +29,17 @@
              "accepted" []
              "declined" []})
 
+(def updated-event {"title" "Test Event Uno"
+                    "location" "Lafayette, LA"
+                    "dateStart" "2017-11-21T00:00:00.000Z"
+                    "dateEnd" "2017-11-21T04:00:00.000Z"
+                    "description" "Live it up"
+                    "organizers" ["fex@bar.com"]
+                    "invited" ["bob@foo.com" "sarah@foo.com"]
+                    "tentative" []
+                    "accepted" []
+                    "declined" []})
+
 (def invalid-id 111111111111111111111111)
 
 (def create-error (generate-string {:error "Failed to create event"}))
@@ -93,3 +104,24 @@
     (is (let [response (handler (request :get (str events-endpoint (format "/%s" invalid-id))))]
           (= (:body response)
              "null")))))
+
+(deftest update-event
+  (testing "Update first event"
+    (is (let [event (get-first-event)
+              id (get-in event ["_id"])
+              response (handler (-> (request :put (str events-endpoint (format "/%s" id)))
+                                    (json-body updated-event)))]
+          (and (= (:status response)
+                  200)
+               (not= (:body response)
+                     "null"))))))
+
+(deftest update-event-invalid
+  (testing "Update first event"
+    (is (let [id invalid-id
+              response (handler (-> (request :put (str events-endpoint (format "/%s" id)))
+                                    (json-body updated-event)))]
+          (and (= (:status response)
+                  200)
+               (= (:body response)
+                  "null"))))))
