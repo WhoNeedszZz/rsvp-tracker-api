@@ -5,6 +5,7 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [cheshire "5.8.0"]
                  [clj-time "0.14.3"]
+                 [com.novemberain/monger "3.1.0"]
                  [compojure "1.6.1"]
                  [ring/ring-core "1.6.3"]
                  [ring/ring-defaults "0.3.1"]
