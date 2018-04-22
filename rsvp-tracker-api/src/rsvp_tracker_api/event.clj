@@ -2,7 +2,7 @@
   (:gen-class)
   (:require
     [cheshire.core :refer [generate-string]]
-    [monger.collection :refer [find-map-by-id insert remove-by-id update-by-id]]
+    [monger.collection :refer [ensure-index find-map-by-id insert remove-by-id update-by-id]]
     [monger.core :refer [connect get-db]]
     [monger.joda-time]
     [monger.json]
@@ -13,6 +13,8 @@
 (def db-name "rsvp-tracker")
 
 (def collection "events")
+
+(def ttl-secs 86400)
 
 (def error-create (generate-string {:error "Failed to create event"}))
 
@@ -29,7 +31,9 @@
     (if (not= 2 (count (keys data)))
       (let [event (insert db collection data)]
         (if (.wasAcknowledged event)
-          (generate-string data)
+          (do
+            (ensure-index db collection (array-map :dateEnd 1) {:expireAfterSeconds ttl-secs})
+            (generate-string data))
           error-create))
       error-create)))
 
