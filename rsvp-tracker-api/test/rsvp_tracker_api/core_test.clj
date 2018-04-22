@@ -46,7 +46,7 @@
 
 (def view-empty (generate-string []))
 
-(def err-id-not-found (generate-string {:error "Event with given ID does not exist"}))\
+(def err-id-not-found (generate-string {:error "Event with given ID does not exist"}))
 
 (def invalid-endpoint (str events-endpoint (format "/%s" invalid-id)))
 
