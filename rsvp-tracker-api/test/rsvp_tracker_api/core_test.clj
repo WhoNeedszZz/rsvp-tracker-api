@@ -90,14 +90,6 @@
             :headers {"Content-Type" "application/json"}
             :body create-error}))))
 
-(deftest view-all-events
-  (testing "View all events when there is an event"
-    (is (let [response (handler (request :get events-endpoint))]
-          (and (= (:status response)
-                  200)
-               (not= (:body response)
-                     view-empty))))))
-
 (deftest view-one-event-exists
   (testing "View an event by id (exists)"
     (is (let [event (get-first-event)
